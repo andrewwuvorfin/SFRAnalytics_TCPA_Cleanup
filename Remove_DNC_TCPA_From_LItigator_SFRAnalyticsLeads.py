@@ -114,7 +114,8 @@ for idx, row in df_dnc.iterrows():
         if right_val is not None and not pd.isna(right_val):
             tag = str(right_val).lower()
 
-            if "tcpa" in tag:
+            # if "tcpa" in tag:
+            if "tcpa" in tag or "dnc_complainers" in tag:
                 print(f"    → RIGHT CELL [{right_col}] = {right_val} ==> TCPA ⚠️⚠️⚠️")
 
                 tcpa_borrowers.add(borrower)
@@ -167,8 +168,10 @@ phones_removed = 0
 
 for _, row in df_primary.iterrows():
 
-    borrower = str(row.get("Borrower", "")).strip()
+    borrower = str(row.get("Borrower LLC", "")).strip()
     owner = str(row.get("Owner Name", "")).strip()
+
+    print(borrower)
 
     # Count ORIGINAL phone cells (before any exclusion)
     for col in phone_columns:
