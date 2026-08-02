@@ -7,9 +7,9 @@ import pandas as pd
 # ======================================
 base_dir = r"C:\Users\awuzw\Desktop\Python Scripts\SFRAnalytics_TCPA_Cleanup"
 
-dnc_folder = os.path.join(base_dir, "TCPA - DNC Matches")
-primary_folder = os.path.join(base_dir, "TCPA - SFRAnalytics Primary")
-output_folder = os.path.join(base_dir, "TCPA - Output")
+dnc_folder = os.path.join(base_dir, "StepD - Input TCPA Liti DNC Match")
+primary_folder = os.path.join(base_dir, "StepD - Input SFRA Leads")
+output_folder = os.path.join(base_dir, "StepD - Output SFRA Leads Scrubbed")
 
 for folder in (dnc_folder, primary_folder, output_folder):
     os.makedirs(folder, exist_ok=True)

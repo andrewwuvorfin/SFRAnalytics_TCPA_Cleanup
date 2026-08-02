@@ -77,7 +77,16 @@ tcpa_numbers = set()
 tcpa_borrowers = set()
 tcpa_owners = set()
 
-phone_columns = ["First Phone", "Second Phone", "Third Phone"]
+phone_columns = [
+    "First Phone",
+    "Second Phone",
+    "Third Phone",
+    "Propstream Phone 1",
+    "Propstream Phone 2",
+    "Propstream Phone 3",
+    "Propstream Phone 4",
+    "Propstream Phone 5"
+]
 
 print("=== BEGIN ROW-BY-ROW DNC / TCPA SCAN ===\n")
 
