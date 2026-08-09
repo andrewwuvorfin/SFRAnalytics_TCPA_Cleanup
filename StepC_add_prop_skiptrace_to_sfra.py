@@ -146,7 +146,7 @@ if missing_folders:
 prop_files = [
     f
     for f in os.listdir(prop_skiptrace_folder)
-    if f.lower().endswith((".xlsx", ".xls"))
+    if f.lower().endswith((".xlsx", ".xls", ".csv"))
 ]
 
 sfra_files = [
