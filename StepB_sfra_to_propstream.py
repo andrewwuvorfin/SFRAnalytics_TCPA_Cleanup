@@ -4,7 +4,7 @@ import pandas as pd
 # ======================================
 # Folder paths
 # ======================================
-base_dir = r"C:\Users\awuzw\Desktop\Python Scripts\SFRAnalytics_TCPA_Cleanup"
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
 input_folder = os.path.join(
     base_dir,

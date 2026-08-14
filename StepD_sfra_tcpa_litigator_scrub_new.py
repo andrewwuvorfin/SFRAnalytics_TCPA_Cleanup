@@ -5,7 +5,7 @@ import pandas as pd
 # ======================================
 # Folder paths
 # ======================================
-base_dir = r"C:\Users\awuzw\Desktop\Python Scripts\SFRAnalytics_TCPA_Cleanup"
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
 dnc_folder = os.path.join(base_dir, "StepD - Input TCPA Liti DNC Match")
 primary_folder = os.path.join(base_dir, "StepD - Input SFRA Leads")
