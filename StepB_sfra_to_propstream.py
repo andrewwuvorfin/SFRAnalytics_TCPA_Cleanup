@@ -1,60 +1,29 @@
 import os
+from pathlib import Path
+
 import pandas as pd
 
 # ======================================
 # Folder paths
 # ======================================
-base_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = Path(__file__).resolve().parent
+input_folder = base_dir / "StepB - Input SFRA Leads"
+output_folder = base_dir / "StepB - Output SFRA Leads in Prop Format"
 
-input_folder = os.path.join(
-    base_dir,
-    "StepB - Input SFRA Leads"
-)
+# Create the pipeline folders before looking for the Step B input CSV.
+for folder in (
+    input_folder,
+    output_folder,
+    base_dir / "StepC - Input Prop Skiptrace Export",
+    base_dir / "StepC - Input SFRA Leads",
+    base_dir / "StepC - Output SFRA Leads w prop Skiptrace",
+    base_dir / "StepD - Input SFRA Leads",
+    base_dir / "StepD - Input TCPA Liti DNC Match",
+    base_dir / "StepD - Output SFRA Leads Scrubbed",
+):
+    folder.mkdir(exist_ok=True)
 
-output_folder = os.path.join(
-    base_dir,
-    "StepB - Output SFRA Leads in Prop Format"
-)
-
-# ======================================
-# Verify required folders exist
-# ======================================
-missing_folders = []
-
-if not os.path.isdir(input_folder):
-    missing_folders.append(input_folder)
-
-if not os.path.isdir(output_folder):
-    missing_folders.append(output_folder)
-
-if missing_folders:
-    missing_folder_text = "\n".join(
-        f" - {folder}" for folder in missing_folders
-    )
-
-    raise FileNotFoundError(
-        "\n\n"
-        "=== REQUIRED STEP B FOLDER NOT FOUND ===\n\n"
-        "The script cannot continue because one or more required folders "
-        "do not exist:\n\n"
-        f"{missing_folder_text}\n\n"
-        "Please manually create each missing folder inside the following "
-        "base directory:\n\n"
-        f"{base_dir}\n\n"
-        "The folder names must match exactly, including all spaces, "
-        "capitalization, and punctuation:\n\n"
-        "  StepB - Input SFRA Leads\n"
-        "  StepB - Output SFRA Leads in Prop Format\n\n"
-        "Do not delete or rename these two folders before running the script.\n"
-        "The script expects both folders to already exist and will stop if "
-        "either folder is missing.\n\n"
-        "After creating the folders, place exactly ONE SFR Analytics lead "
-        "CSV file inside:\n\n"
-        f"{input_folder}\n\n"
-        "Then run the script again."
-    )
-
-print("\n=== REQUIRED STEP B FOLDERS FOUND ===")
+print("\n=== STEP B, C AND D FOLDERS READY ===")
 print(f"Input folder  : {input_folder}")
 print(f"Output folder : {output_folder}")
 
@@ -80,7 +49,6 @@ if len(input_files) == 0:
         f"{input_folder}\n\n"
         "Please place exactly ONE SFR Analytics lead CSV file into this "
         "folder.\n\n"
-        "Do not delete or rename the Step B input or output folders.\n"
         "Once the CSV file has been copied into the input folder, run the "
         "script again."
     )
@@ -102,7 +70,6 @@ if len(input_files) > 1:
         "Please move or remove the extra CSV files so that only ONE CSV file "
         "remains inside:\n\n"
         f"{input_folder}\n\n"
-        "Do not delete or rename the input or output folders themselves.\n"
         "After only one CSV file remains, run the script again."
     )
 
@@ -199,7 +166,13 @@ output_path = os.path.join(output_folder, output_filename)
 # ======================================
 # Save output
 # ======================================
-df_output.to_csv(output_path, index=False)
+try:
+    df_output.to_csv(output_path, index=False, mode="x")
+except FileExistsError:
+    raise FileExistsError(
+        f"Step B skipped the export because {output_path} already exists. "
+        "Move or rename that file to generate a fresh export."
+    ) from None
 
 # ======================================
 # Final report
