@@ -11,7 +11,7 @@ import pandas as pd
 
 
 # True moves each ordinary DNC number to its matching "<phone column> DNC Flag" field.
-# TCPA, DNC complainer, and NRA name matches exclude leads in both modes.
+# TCPA, TROLL, DNC complainer, and NRA matches exclude leads in both modes.
 EXPORT_DNC_NUMBERS = False
 
 PHONE_COLUMNS = (
@@ -34,7 +34,7 @@ STATE_NAMES = set((
     "West Virginia|Wisconsin|Wyoming|Puerto Rico|Guam|Virgin Islands|US Virgin Islands"
 ).casefold().split("|"))
 MISSING_KEYS = {"", "nan", "none", "null", "<na>", "na", "n/a", "#n/a"}
-NRA_TAG = r"(?:^|[^a-z0-9])nra(?:$|[^a-z0-9])"
+HARD_TAG_PATTERN = r"tcpa|dnc complainer|(?<![a-z0-9])(?:nra|troll)(?![a-z0-9])"
 
 
 def match_key(value):
@@ -63,7 +63,7 @@ def classify_status(value):
     # The vendor can combine several tags, including "TCPA troll", in one cell.
     tags = {" ".join(t.casefold().replace("_", " ").replace("-", " ").split())
             for t in value.split("|")}
-    if any("tcpa" in tag or "dnc complainer" in tag or re.search(NRA_TAG, tag) for tag in tags):
+    if any(re.search(HARD_TAG_PATTERN, tag) for tag in tags):
         return "hard"
 
     registry = False
@@ -124,7 +124,7 @@ def load_screening(path, primary):
     for i, header in enumerate(headers):
         paired_header = i > 0 and header.casefold() == f"{headers[i-1]} type".casefold()
         if (header.casefold() == "type" or paired_header) and i not in status_positions:
-            if data.iloc[:, i].str.contains(rf"tcpa|dnc|complainer|{NRA_TAG}", case=False).any():
+            if data.iloc[:, i].str.contains(rf"{HARD_TAG_PATTERN}|dnc|complainer", case=False).any():
                 raise ValueError(f"Screening flags found beside unsupported field {headers[i-1]!r}")
     return pd.DataFrame(selected).reset_index(drop=True), slots
 
