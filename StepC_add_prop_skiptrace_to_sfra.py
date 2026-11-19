@@ -2,6 +2,7 @@ import os
 import re
 import csv
 import pandas as pd
+from StepD_sfra_tcpa_litigator_scrub_new import split_owner_name
 
 # ======================================
 # Folder paths
@@ -316,15 +317,17 @@ sfra_phone_columns = [
     "Third Phone"
 ]
 
-new_output_columns = [
-    "First Name",
-    "Last Name",
-    "Propstream Phone 1",
-    "Propstream Phone 2",
-    "Propstream Phone 3",
-    "Propstream Phone 4",
-    "Propstream Phone 5"
-]
+name_columns = ("First Name", "Last Name")
+# A reduced SFRA export can omit optional fields. Use the standard headers for
+# empty positions before X/Y without shifting any of the supplied lead fields.
+standard_sfra_columns = (
+    "Borrower LLC", "Most Recent Recording Date", "Origination Volume",
+    "Avg Origination Amount", "Median Origination Amount", "Addresses Borrowed On",
+    "Lenders Used", "# Loans", "Last Loan Type", "Loan Types", "Num Properties",
+    "Owner Name", "First Phone", "Phone Verified", "Second Phone", "Third Phone",
+    "First Email", "Second Email", "Third Email", "Mailing Address", "Mailing City",
+    "Mailing State", "Mailing Zip",
+)
 
 prop_output_phone_columns = [
     "Propstream Phone 1",
@@ -338,6 +341,7 @@ prop_output_phone_columns = [
 # Process SFRA rows and write output
 # ======================================
 rows_processed = 0
+rows_with_split_names = 0
 addresses_matched = 0
 addresses_not_matched = 0
 prop_phones_written = 0
@@ -359,6 +363,7 @@ with open(
         )
 
     required_sfra_headers = [
+        "Owner Name",
         "Mailing Address",
         "First Phone",
         "Second Phone",
@@ -381,9 +386,13 @@ with open(
             )
         )
 
-    output_headers = reader.fieldnames.copy()
+    output_headers = [header for header in reader.fieldnames if header not in name_columns]
+    if len(output_headers) < 23:
+        missing_columns = [header for header in standard_sfra_columns if header not in output_headers]
+        output_headers.extend(missing_columns[:23 - len(output_headers)])
+    output_headers[23:23] = name_columns
 
-    for new_column in new_output_columns:
+    for new_column in prop_output_phone_columns:
         if new_column not in output_headers:
             output_headers.append(new_column)
 
@@ -405,9 +414,10 @@ with open(
 
             rows_processed += 1
 
-            # Leave formatting columns blank
-            row["First Name"] = ""
-            row["Last Name"] = ""
+            # Populate the name fields used by the vendor's NRA screening.
+            row["First Name"], row["Last Name"] = split_owner_name(row["Owner Name"])
+            if row["First Name"] and row["Last Name"]:
+                rows_with_split_names += 1
 
             # Clear the five PropStream output slots
             for column in prop_output_phone_columns:
@@ -486,6 +496,7 @@ with open(
 # ======================================
 print("\n=== STEP C OUTPUT FILE CREATED ===")
 print(f"SFRA rows processed              : {rows_processed}")
+print(f"Leads with first and last name   : {rows_with_split_names}")
 print(f"Addresses matched                : {addresses_matched}")
 print(f"Addresses not matched            : {addresses_not_matched}")
 print(f"New PropStream phones written    : {prop_phones_written}")
